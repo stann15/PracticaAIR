@@ -1,0 +1,30 @@
+# app/services/usuario_service.py
+from werkzeug.security import generate_password_hash, check_password_hash
+from app.models.usuario import Usuario
+from app.repositories.usuario_dao import UsuarioDAO
+
+class UsuarioService:
+    @staticmethod
+    def registrar_usuario(correo: str, contrasena: str) -> dict:
+        # Validación de dominios URJC según requisito RF-USR-02
+        if not correo.endswith('@urjc.es') and not correo.endswith('@alumnos.urjc.es'):
+            return {"error": "El correo debe pertenecer a los dominios @urjc.es o @alumnos.urjc.es", "status": 400}
+
+        if UsuarioDAO.obtener_por_correo(correo):
+            return {"error": "El usuario ya existe en el sistema", "status": 409}
+
+        contrasena_hash = generate_password_hash(contrasena)
+        nuevo_usuario = Usuario(correoCorporativo=correo, contrasena_hash=contrasena_hash)
+        
+        UsuarioDAO.guardar(nuevo_usuario)
+        
+        return {"mensaje": "Usuario registrado correctamente", "id": nuevo_usuario.id, "status": 201}
+
+    @staticmethod
+    def iniciar_sesion(correo: str, contrasena: str) -> dict:
+        usuario = UsuarioDAO.obtener_por_correo(correo)
+        
+        if not usuario or not check_password_hash(usuario.contrasena_hash, contrasena):
+            return {"error": "Credenciales inválidas", "status": 401}
+            
+        return {"mensaje": "Inicio de sesión exitoso", "id": usuario.id, "correo": usuario.correoCorporativo, "status": 200}
