@@ -1,0 +1,38 @@
+# app/models/ruta.py
+from app.extensions import db
+from geoalchemy2 import Geometry
+
+class Ruta(db.Model):
+    """
+    Modelo de Ruta. Cumple estrictamente con el diagrama UML proporcionado.
+    Implementa tipos de datos espaciales (GEOMETRY) nativos de PostGIS.
+    """
+    __tablename__ = 'rutas'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    # Relación 0..* con Usuario según diagrama UML
+    usuario_id = db.Column(db.Integer, db.ForeignKey('usuarios.id'), nullable=False)
+    
+    # Datos espaciales: SRID 4326 es el estándar WGS84 (GPS)
+    origen = db.Column(Geometry('POINT', srid=4326), nullable=False)
+    destino = db.Column(Geometry('POINT', srid=4326), nullable=False)
+    
+    indiceSeguridad = db.Column(db.Float, nullable=False)
+    estaActiva = db.Column(db.Boolean, default=True)
+    fechaHoraFin = db.Column(db.DateTime, nullable=True)
+
+    # Relación bidireccional
+    usuario = db.relationship('Usuario', backref=db.backref('rutas', lazy=True))
+
+    # Métodos definidos estrictamente según el diagrama de clases UML
+    def recalcularIndice(self):
+        pass
+
+    def actualizaCoordenadas(self):
+        pass
+
+    def iniciarSeguimiento(self):
+        pass
+
+    def finalizarTrayecto(self):
+        pass
