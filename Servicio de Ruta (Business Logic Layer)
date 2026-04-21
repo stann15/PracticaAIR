@@ -1,0 +1,25 @@
+# app/services/ruta_service.py
+from app.models.ruta import Ruta
+from app.repositories.ruta_dao import RutaDAO
+
+class RutaService:
+    @staticmethod
+    def guardar_ruta(usuario_id: int, origen_wkt: str, destino_wkt: str, indice_seguridad: float) -> dict:
+        try:
+            # Formateamos el String WKT (Well-Known Text) para que PostGIS lo entienda con el SRID correcto
+            origen_geom = f'SRID=4326;{origen_wkt}'
+            destino_geom = f'SRID=4326;{destino_wkt}'
+
+            nueva_ruta = Ruta(
+                usuario_id=usuario_id,
+                origen=origen_geom,
+                destino=destino_geom,
+                indiceSeguridad=indice_seguridad,
+                estaActiva=True
+            )
+            
+            RutaDAO.guardar(nueva_ruta)
+            
+            return {"mensaje": "Ruta segura guardada correctamente en PostGIS", "id_ruta": nueva_ruta.id, "status": 201}
+        except Exception as e:
+            return {"error": f"Error interno al guardar la ruta: {str(e)}", "status": 500}
