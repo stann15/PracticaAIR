@@ -1,0 +1,10 @@
+# app/repositories/ruta_dao.py
+from app.models.ruta import Ruta
+from app.extensions import db
+
+class RutaDAO:
+    @staticmethod
+    def guardar(ruta: Ruta) -> Ruta:
+        db.session.add(ruta)
+        db.session.commit()
+        return ruta
