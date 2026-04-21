@@ -1,0 +1,25 @@
+# app/controllers/ruta_controller.py
+from flask import Blueprint, request, jsonify
+from app.services.ruta_service import RutaService
+
+ruta_bp = Blueprint('ruta_bp', __name__)
+
+@ruta_bp.route('/api/rutas', methods=['POST'])
+def crear_ruta():
+    datos = request.get_json()
+    
+    # Validar payload
+    campos_requeridos = ['usuario_id', 'origen', 'destino', 'indice_seguridad']
+    if not datos or not all(campo in datos for campo in campos_requeridos):
+        return jsonify({"error": "Faltan campos obligatorios. Se requiere usuario_id, origen, destino e indice_seguridad"}), 400
+
+    # Delegar la creación al servicio
+    resultado = RutaService.guardar_ruta(
+        usuario_id=datos['usuario_id'],
+        origen_wkt=datos['origen'],
+        destino_wkt=datos['destino'],
+        indice_seguridad=datos['indice_seguridad']
+    )
+    
+    status_code = resultado.pop('status')
+    return jsonify(resultado), status_code
