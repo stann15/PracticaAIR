@@ -1,0 +1,31 @@
+# app/__init__.py
+import os
+from flask import Flask
+from app.extensions import db
+from app.controllers.usuario_controller import usuario_bp
+
+def create_app():
+    app = Flask(__name__)
+    
+    # Configuración de conexión a PostgreSQL + PostGIS
+    db_user = os.getenv('POSTGRES_USER', 'postgres')
+    db_password = os.getenv('POSTGRES_PASSWORD', 'postgres')
+    db_host = os.getenv('POSTGRES_HOST', 'db')
+    db_name = os.getenv('POSTGRES_DB', 'senda_urjc')
+    
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'postgresql://{db_user}:{db_password}@{db_host}:5432/{db_name}'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
+    db.init_app(app)
+
+    # Registro de blueprints (Rutas)
+    app.register_blueprint(usuario_bp)
+
+    # Creación automática de tablas si no existen
+    with app.app_context():
+        # Extensión PostGIS necesaria para futuras tablas espaciales
+        db.session.execute(db.text('CREATE EXTENSION IF NOT EXISTS postgis;'))
+        db.session.commit()
+        db.create_all()
+
+    return app
