@@ -4,6 +4,7 @@ from flask import Flask
 from app.extensions import db
 from app.controllers.usuario_controller import usuario_bp
 from app.controllers.ruta_controller import ruta_bp
+from app.controllers.incidencia_controller import incidencia_bp
 
 def create_app():
     app = Flask(__name__)
@@ -19,9 +20,10 @@ def create_app():
 
     db.init_app(app)
 
-    # Registro de blueprints (Rutas)
+    # Registro de blueprints (Rutas / Endpoints)
     app.register_blueprint(usuario_bp)
-    app.register_blueprint(ruta_bp)  # <-- NUEVO: Blueprint de Rutas
+    app.register_blueprint(ruta_bp)
+    app.register_blueprint(incidencia_bp)  # <-- NUEVO: Blueprint de Incidencias
 
     # Creación automática de tablas si no existen
     with app.app_context():
@@ -32,6 +34,7 @@ def create_app():
         # IMPORTANTE: Importar los modelos aquí asegura que SQLAlchemy los detecte al hacer create_all()
         from app.models.usuario import Usuario
         from app.models.ruta import Ruta 
+        from app.models.incidencia import Incidencia  # <-- NUEVO: Importación del modelo Incidencia
         
         db.create_all()
 
