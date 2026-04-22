@@ -1,6 +1,7 @@
 # app/__init__.py
 import os
 from flask import Flask
+from flasgger import Swagger
 from app.extensions import db
 from app.controllers.usuario_controller import usuario_bp
 from app.controllers.ruta_controller import ruta_bp
@@ -20,10 +21,23 @@ def create_app():
 
     db.init_app(app)
 
+    # Configuración e Inicialización de Swagger (Flasgger)
+    swagger_template = {
+        "info": {
+            "title": "API REST - Senda URJC",
+            "description": "Documentación interactiva de los endpoints del backend espacial para la aplicación Senda URJC.",
+            "version": "1.0.0",
+            "contact": {
+                "name": "Equipo de Desarrollo - Senda URJC"
+            }
+        }
+    }
+    Swagger(app, template=swagger_template)
+
     # Registro de blueprints (Rutas / Endpoints)
     app.register_blueprint(usuario_bp)
     app.register_blueprint(ruta_bp)
-    app.register_blueprint(incidencia_bp)  # <-- NUEVO: Blueprint de Incidencias
+    app.register_blueprint(incidencia_bp)
 
     # Creación automática de tablas si no existen
     with app.app_context():
@@ -31,10 +45,10 @@ def create_app():
         db.session.execute(db.text('CREATE EXTENSION IF NOT EXISTS postgis;'))
         db.session.commit()
         
-        # IMPORTANTE: Importar los modelos aquí asegura que SQLAlchemy los detecte al hacer create_all()
+        # Importación de modelos para que SQLAlchemy los detecte
         from app.models.usuario import Usuario
         from app.models.ruta import Ruta 
-        from app.models.incidencia import Incidencia  # <-- NUEVO: Importación del modelo Incidencia
+        from app.models.incidencia import Incidencia
         
         db.create_all()
 
