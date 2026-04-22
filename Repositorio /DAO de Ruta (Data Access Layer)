@@ -8,3 +8,8 @@ class RutaDAO:
         db.session.add(ruta)
         db.session.commit()
         return ruta
+
+    # NUEVO: Obtener ruta por ID para la validación
+    @staticmethod
+    def obtener_por_id(ruta_id: int) -> Ruta:
+        return Ruta.query.get(ruta_id)
