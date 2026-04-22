@@ -1,0 +1,39 @@
+# app/controllers/incidencia_controller.py
+from flask import Blueprint, request, jsonify
+from app.services.incidencia_service import IncidenciaService
+
+incidencia_bp = Blueprint('incidencia_bp', __name__)
+
+@incidencia_bp.route('/api/incidencias', methods=['POST'])
+def reportar_incidencia():
+    datos = request.get_json()
+    
+    campos_requeridos = ['usuario_id', 'tipo', 'lon', 'lat']
+    if not datos or not all(campo in datos for campo in campos_requeridos):
+        return jsonify({"error": "Faltan campos obligatorios (usuario_id, tipo, lon, lat)"}), 400
+
+    resultado = IncidenciaService.crear_incidencia(
+        usuario_id=datos['usuario_id'],
+        tipo=datos['tipo'],
+        lon=datos['lon'],
+        lat=datos['lat'],
+        descripcion=datos.get('descripcion', '')
+    )
+    
+    status_code = resultado.pop('status')
+    return jsonify(resultado), status_code
+
+@incidencia_bp.route('/api/incidencias/cercanas', methods=['GET'])
+def incidencias_cercanas():
+    try:
+        # Extraemos parámetros de la URL (Query Params)
+        lon = float(request.args.get('lon'))
+        lat = float(request.args.get('lat'))
+        radio = float(request.args.get('radio', 500)) # 500 metros por defecto si no se indica
+    except (TypeError, ValueError):
+        return jsonify({"error": "Los parámetros 'lon' y 'lat' son obligatorios y deben ser numéricos"}), 400
+
+    resultado = IncidenciaService.obtener_incidencias_cercanas(lon, lat, radio)
+    status_code = resultado.pop('status')
+    
+    return jsonify(resultado), status_code
