@@ -57,6 +57,30 @@ Bash
 curl -X POST http://localhost:5000/api/rutas \
 -H "Content-Type: application/json" \
 -d '{
+
+3. Instrucciones de Prueba
+Dado que hemos añadido la tabla de incidencias, te recomiendo hacer un docker-compose down y un docker-compose up --build para que SQLAlchemy detecte y cree la nueva tabla espacial en el arranque.
+
+Aquí tienes los comandos de prueba listos para tu terminal:
+
+1. Reportar una nueva incidencia (Endpoint POST)
+(Recuerda que el usuario_id debe existir previamente en tu base de datos).
+
+Bash
+curl -X POST http://localhost:5000/api/incidencias \
+-H "Content-Type: application/json" \
+-d '{
+      "usuario_id": 1,
+      "tipo": "Farola fundida",
+      "descripcion": "La farola del parking principal está parpadeando y casi apagada",
+      "lon": -3.8741,
+      "lat": 40.3364
+    }'
+2. Búsqueda Espacial con PostGIS (Endpoint GET)
+Buscaremos todas las incidencias a un máximo de 1000 metros desde unas coordenadas cercanas (las de un usuario caminando, por ejemplo). PostGIS hará el cálculo geoespacial real descartando lo que esté más lejos de ese radio.
+
+Bash
+curl -X GET "http://localhost:5000/api/incidencias/cercanas?lon=-3.8745&lat=40.3370&radio=1000"
       "usuario_id": 1,
       "origen": "POINT(-3.8741 40.3364)", 
       "destino": "POINT(-3.8765 40.3378)",
