@@ -86,3 +86,57 @@ curl -X GET "http://localhost:5000/api/incidencias/cercanas?lon=-3.8745&lat=40.3
       "destino": "POINT(-3.8765 40.3378)",
       "indice_seguridad": 8.5
     }'
+
+Dado que hemos modificado la estructura de la tabla Ruta añadiendo la columna trazado, recuerda reiniciar la base de datos levantando el contenedor nuevamente para que SQLAlchemy actualice el esquema:
+
+Bash
+docker-compose down -v
+docker-compose up --build
+(Nota: Al destruir los volúmenes, recuerda volver a registrar un usuario con ID 1).
+
+Paso 1: Crear una Ruta con Trazado Completo (LINESTRING)
+Vamos a simular una ruta desde la entrada del campus hacia la biblioteca.
+
+Bash
+curl -X POST http://localhost:5000/api/rutas \
+-H "Content-Type: application/json" \
+-d '{
+      "usuario_id": 1,
+      "origen": "POINT(-3.8741 40.3364)", 
+      "destino": "POINT(-3.8765 40.3378)",
+      "trazado": "LINESTRING(-3.8741 40.3364, -3.8750 40.3370, -3.8765 40.3378)",
+      "indice_seguridad": 10.0
+    }'
+(Supongamos que el sistema te devuelve que ha sido guardada con el "id_ruta": 1).
+
+Paso 2: Crear Incidencias (Una cerca de la línea y otra lejos)
+
+Incidencia Peligrosa (justo en medio del trayecto, a metros de la línea):
+
+Bash
+curl -X POST http://localhost:5000/api/incidencias \
+-H "Content-Type: application/json" \
+-d '{
+      "usuario_id": 1,
+      "tipo": "Zona solitaria/miedo",
+      "descripcion": "Zona muy oscura y vacía",
+      "lon": -3.8751,
+      "lat": 40.3371
+    }'
+Incidencia Irrelevante (en el otro extremo del campus, a más de 50 metros de nuestra ruta):
+
+Bash
+curl -X POST http://localhost:5000/api/incidencias \
+-H "Content-Type: application/json" \
+-d '{
+      "usuario_id": 1,
+      "tipo": "Farola fundida",
+      "descripcion": "En el parking trasero",
+      "lon": -3.8800,
+      "lat": 40.3300
+    }'
+Paso 3: Evaluar la Seguridad de la Ruta
+Al llamar a la evaluación espacial, PostGIS descartará de forma nativa el parking trasero e identificará el punto peligroso en la ruta 1, determinando un riesgo "Medio" (1 incidencia).
+
+Bash
+curl -X GET http://localhost:5000/api/rutas/1/evaluacion
