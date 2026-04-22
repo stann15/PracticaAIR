@@ -8,18 +8,25 @@ ruta_bp = Blueprint('ruta_bp', __name__)
 def crear_ruta():
     datos = request.get_json()
     
-    # Validar payload
     campos_requeridos = ['usuario_id', 'origen', 'destino', 'indice_seguridad']
     if not datos or not all(campo in datos for campo in campos_requeridos):
         return jsonify({"error": "Faltan campos obligatorios. Se requiere usuario_id, origen, destino e indice_seguridad"}), 400
 
-    # Delegar la creación al servicio
     resultado = RutaService.guardar_ruta(
         usuario_id=datos['usuario_id'],
         origen_wkt=datos['origen'],
         destino_wkt=datos['destino'],
-        indice_seguridad=datos['indice_seguridad']
+        indice_seguridad=datos['indice_seguridad'],
+        trazado_wkt=datos.get('trazado', None) # Extraemos el trazado si lo envían
     )
     
     status_code = resultado.pop('status')
+    return jsonify(resultado), status_code
+
+# NUEVO: Endpoint de evaluación de seguridad de la ruta
+@ruta_bp.route('/api/rutas/<int:ruta_id>/evaluacion', methods=['GET'])
+def evaluar_ruta(ruta_id):
+    resultado = RutaService.evaluar_seguridad_ruta(ruta_id)
+    status_code = resultado.pop('status')
+    
     return jsonify(resultado), status_code
