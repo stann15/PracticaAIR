@@ -5,7 +5,7 @@ from geoalchemy2 import Geometry
 class Ruta(db.Model):
     """
     Modelo de Ruta. Cumple estrictamente con el diagrama UML proporcionado.
-    Implementa tipos de datos espaciales (GEOMETRY) nativos de PostGIS.
+    Implementa tipos de datos espaciales nativos de PostGIS.
     """
     __tablename__ = 'rutas'
 
@@ -16,6 +16,9 @@ class Ruta(db.Model):
     # Datos espaciales: SRID 4326 es el estándar WGS84 (GPS)
     origen = db.Column(Geometry('POINT', srid=4326), nullable=False)
     destino = db.Column(Geometry('POINT', srid=4326), nullable=False)
+    
+    # NUEVO: Trazado completo de la ruta (Línea)
+    trazado = db.Column(Geometry('LINESTRING', srid=4326), nullable=True)
     
     indiceSeguridad = db.Column(db.Float, nullable=False)
     estaActiva = db.Column(db.Boolean, default=True)
