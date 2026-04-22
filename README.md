@@ -140,3 +140,28 @@ Al llamar a la evaluación espacial, PostGIS descartará de forma nativa el park
 
 Bash
 curl -X GET http://localhost:5000/api/rutas/1/evaluacion
+
+Se ha añadido la librería responsable de leer los docstrings y autogenerar la interfaz (Flasgger).
+
+requirements.txt
+
+Plaintext
+Flask==3.0.0
+Flask-SQLAlchemy==3.1.1
+GeoAlchemy2==0.14.3
+psycopg2-binary==2.9.9
+Werkzeug==3.0.1
+flasgger==0.9.7.1
+4. Instrucciones de Prueba
+Para verificar que Swagger está corriendo y documentando nuestro prototipo correctamente:
+
+Levanta de nuevo el contenedor asegurándote de reconstruir la imagen para que instale la nueva dependencia flasgger declarada en requirements.txt:
+
+Bash
+docker-compose up --build
+Abre tu navegador web favorito.
+
+Ingresa la siguiente URL:
+http://localhost:5000/apidocs/
+
+Deberás ver la interfaz interactiva de Senda URJC. Puedes desplegar cada grupo (Usuarios, Rutas, Incidencias), pulsar el botón "Try it out", modificar los campos JSON con los ejemplos pre-cargados que dejé en los docstrings, y pulsar "Execute" para realizar peticiones reales a nuestra base de datos PostgreSQL desde el propio navegador sin necesidad de usar cURL o Postman.
